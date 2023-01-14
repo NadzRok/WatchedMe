@@ -15,7 +15,7 @@ namespace WatchedMe.Controllers {
         // GET: api/movie/getallmovies
         [HttpGet("getallmovies")]
         public IActionResult GetMovies() {
-            return Ok(new MovieReturnMessage() { IsError = false, Message = "", MovieList = _DbContext.Movies.ToList() });
+            return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" } , MovieList = _DbContext.Movies.ToList() });
         }
 
         // GET: api/movie/getamovie?movieid={MovieId}
@@ -25,14 +25,18 @@ namespace WatchedMe.Controllers {
             var result = new MovieReturnMessage();
             if (movieReturn != null) {
                 result = new MovieReturnMessage() {
-                    IsError = false,
-                    Message = "",
-                    Movie = movieReturn
+                    ErrorInfo = new ErrorReply() {
+                        IsError = false,
+                        Message = ""
+                    },
+                    SingleMovie = movieReturn
                 };
             } else {
                 result = new MovieReturnMessage() {
-                    IsError = true,
-                    Message = "Movie Not Found."
+                    ErrorInfo = new ErrorReply() {
+                        IsError = true,
+                        Message = "Movie Not Found."
+                    }
                 };
             }
             return Ok(result);
@@ -42,25 +46,27 @@ namespace WatchedMe.Controllers {
         [HttpPost("addmovie")]
         public async Task<IActionResult> PostMovie([FromBody]Movie MovieToAdd) {
             if (MovieToAdd == null) { 
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "No data to add."});
+                return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to add." } });
             }
             var movieCheck = await _DbContext.Movies.FirstOrDefaultAsync(mc => mc.Title == MovieToAdd.Title);
             if (movieCheck != null) {
                 if (movieCheck.Active == false) {
                     movieCheck.Active = true;
                     await _DbContext.SaveChangesAsync();
-                    return Ok(new MovieReturnMessage() { IsError = false, Message = "", Movie = MovieToAdd });
+                    return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = MovieToAdd });
                 }
-                return Ok(new MovieReturnMessage() { IsError = true, Message = "Movie has already been added." });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie has already been added." } });
             }
             MovieToAdd.Id = Guid.NewGuid();
+            MovieToAdd.Created = DateTime.Now;
+            MovieToAdd.ModifideDate = MovieToAdd.Created;
             MovieToAdd.Active = true;
             try {
                 await _DbContext.Movies.AddAsync(MovieToAdd);
                 await _DbContext.SaveChangesAsync();
-                return Ok(new MovieReturnMessage() { IsError = false, Message = "", Movie = MovieToAdd });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = MovieToAdd });
             } catch {
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "Failed to add movie." });
+                return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to add movie." } });
             }
         }
 
@@ -68,19 +74,23 @@ namespace WatchedMe.Controllers {
         [HttpPut("updatemovie")]
         public async Task<IActionResult> PutMovie([FromBody] Movie MovieToUpdate) {
             if(MovieToUpdate == null) {
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "No data to update."});
+                return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
             }
             var movieUpdate = await _DbContext.Movies.FirstOrDefaultAsync(mu => mu.Id == MovieToUpdate.Id);
             if (movieUpdate == null) {
-                return Ok(new MovieReturnMessage() { IsError = true, Message = "Movie does not exist." });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie does not exist." } });
             }
-            movieUpdate = MovieToUpdate;
+            movieUpdate.Title = MovieToUpdate.Title;
+            movieUpdate.Description = MovieToUpdate.Description;
+            movieUpdate.Created = MovieToUpdate.Created;
+            movieUpdate.ModifideDate = DateTime.Now;
+            movieUpdate.Url = MovieToUpdate.Url;
             movieUpdate.Active = true;
             try {
                 await _DbContext.SaveChangesAsync();
-                return Ok(new MovieReturnMessage() { IsError = false, Message = "", Movie = movieUpdate });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = movieUpdate });
             } catch {
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "Failed to add movie." });
+                return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to add movie." } });
             }
         }
 
@@ -88,18 +98,19 @@ namespace WatchedMe.Controllers {
         [HttpDelete("deletemovie")]
         public async Task<IActionResult> DeleteMovie(Guid MovieId) {
             if (MovieId == Guid.Empty) {
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "No data to update." });
+                return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
             }
             var movieDelete = _DbContext.Movies.FirstOrDefault(mu => mu.Id == MovieId);
             if(movieDelete == null) {
-                return Ok(new MovieReturnMessage() { IsError = true, Message = "Movie does not exist." });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie does not exist." } });
             }
+            movieDelete.ModifideDate = DateTime.Now;
             movieDelete.Active = false;
             try { 
                 await _DbContext.SaveChangesAsync();
-                return Ok(new MovieReturnMessage() { IsError = false, Message = "", Movie = movieDelete });
+                return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = movieDelete });
             } catch {
-                return BadRequest(new MovieReturnMessage() { IsError = true, Message = "Failed to remove movie." });
+                return BadRequest(new MovieReturnMessage() {ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to remove movie." } });
             }
         }
     }

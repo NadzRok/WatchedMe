@@ -10,6 +10,7 @@
         [Required]
         public DateTime Created { get; set; }
         [Required]
+        public DateTime ModifideDate { get; set; }
         public string Url { get; set; } = string.Empty;
         [Required]
         public bool Active { get; set; }
