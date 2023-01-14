@@ -11,5 +11,7 @@
         public DateTime Created { get; set; }
         [Required]
         public string Url { get; set; } = string.Empty;
+        [Required]
+        public bool Active { get; set; }
     }
 }
