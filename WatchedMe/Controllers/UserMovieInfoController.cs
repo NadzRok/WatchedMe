@@ -17,7 +17,7 @@
         // GET: api/UserMovieInfo/getusermovie?userid={UserId}?movieid={MovieId}
         [HttpGet("getusermovie")]
         public async Task<IActionResult> GetUserInfo(Guid UserId, Guid MovieId) {
-            var userMovieReturn = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umr => umr.UserId == UserId && umr.Id == MovieId);
+            var userMovieReturn = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umr => umr.UserId == UserId && umr.MovieId == MovieId && umr.Active != false);
             var result = new UserMovieInfoReply();
             if(userMovieReturn != null) {
                 result = new UserMovieInfoReply() {
@@ -97,7 +97,7 @@
             if(MovieId == Guid.Empty || UserId == Guid.Empty) {
                 return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
             }
-            var UserInfoDelete = _DbContext.UsersMovieInfo.FirstOrDefault(uid => uid.Id == MovieId && uid.UserId == UserId && uid.Active != false);
+            var UserInfoDelete = _DbContext.UsersMovieInfo.FirstOrDefault(uid => uid.MovieId == MovieId && uid.UserId == UserId && uid.Active != false);
             if(UserInfoDelete == null) {
                 return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "User's movie info does not exist." } });
             }

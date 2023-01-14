@@ -21,7 +21,7 @@ namespace WatchedMe.Controllers {
         // GET: api/movie/getamovie?movieid={MovieId}
         [HttpGet("getamovie")]
         public async Task<IActionResult> GetMovie(Guid MovieId) {
-            var movieReturn = await _DbContext.Movies.FirstOrDefaultAsync(mr => mr.Id == MovieId);
+            var movieReturn = await _DbContext.Movies.FirstOrDefaultAsync(mr => mr.Id == MovieId && mr.Active != false);
             var result = new MovieReturnMessage();
             if (movieReturn != null) {
                 result = new MovieReturnMessage() {
@@ -53,7 +53,7 @@ namespace WatchedMe.Controllers {
                 if (movieCheck.Active == false) {
                     movieCheck.Active = true;
                     await _DbContext.SaveChangesAsync();
-                    return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = MovieToAdd });
+                    return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = movieCheck });
                 }
                 return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie has already been added." } });
             }
