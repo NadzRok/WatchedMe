@@ -15,7 +15,7 @@ namespace WatchedMe.Controllers {
         // GET: api/movie/getallmovies
         [HttpGet("getallmovies")]
         public IActionResult GetMovies() {
-            return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" } , MovieList = _DbContext.Movies.ToList() });
+            return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" } , MovieList = _DbContext.Movies.Where(mrm => mrm.Active != false).ToList() });
         }
 
         // GET: api/movie/getamovie?movieid={MovieId}
@@ -62,7 +62,7 @@ namespace WatchedMe.Controllers {
             MovieToAdd.ModifideDate = MovieToAdd.Created;
             MovieToAdd.Active = true;
             try {
-                await _DbContext.Movies.AddAsync(MovieToAdd);
+                await _DbContext.AddAsync(MovieToAdd);
                 await _DbContext.SaveChangesAsync();
                 return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleMovie = MovieToAdd });
             } catch {
@@ -76,7 +76,7 @@ namespace WatchedMe.Controllers {
             if(MovieToUpdate == null) {
                 return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
             }
-            var movieUpdate = await _DbContext.Movies.FirstOrDefaultAsync(mu => mu.Id == MovieToUpdate.Id);
+            var movieUpdate = await _DbContext.Movies.FirstOrDefaultAsync(mu => mu.Id == MovieToUpdate.Id && mu.Active != false);
             if (movieUpdate == null) {
                 return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie does not exist." } });
             }
@@ -100,7 +100,7 @@ namespace WatchedMe.Controllers {
             if (MovieId == Guid.Empty) {
                 return BadRequest(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
             }
-            var movieDelete = _DbContext.Movies.FirstOrDefault(mu => mu.Id == MovieId);
+            var movieDelete = _DbContext.Movies.FirstOrDefault(md => md.Id == MovieId && md.Active != false);
             if(movieDelete == null) {
                 return Ok(new MovieReturnMessage() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie does not exist." } });
             }
