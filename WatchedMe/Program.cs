@@ -1,9 +1,14 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.EntityFrameworkCore;
-using WatchedMe.Data;
-using WatchedMe.Models;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.UI;
+global using Microsoft.EntityFrameworkCore;
+global using WatchedMe.Data;
+global using WatchedMe.Models;
+global using Microsoft.AspNetCore.Mvc;
+global using System.ComponentModel.DataAnnotations;
+global using Microsoft.Extensions.Options;
+global using Duende.IdentityServer.EntityFramework.Options;
+global using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
