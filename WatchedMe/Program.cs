@@ -10,6 +10,7 @@ global using Microsoft.Extensions.Options;
 global using Duende.IdentityServer.EntityFramework.Options;
 global using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 global using WatchedMe.Models.NoDb;
+global using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
