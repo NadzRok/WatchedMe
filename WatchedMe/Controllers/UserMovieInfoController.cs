@@ -73,7 +73,7 @@
             if(MovieId == Guid.Empty || UserId == Guid.Empty) {
                 return NotFound();
             }
-            var userMovieDelete = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umd => umd.Id == UserId && umd.MovieId == MovieId && umd.Active != false);
+            var userMovieDelete = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umd => umd.UserId == UserId && umd.MovieId == MovieId && umd.Active != false);
             if(userMovieDelete == null) {
                 return NotFound();
             }
