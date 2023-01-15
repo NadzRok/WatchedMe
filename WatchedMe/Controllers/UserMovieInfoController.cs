@@ -10,105 +10,82 @@
 
         // GET: api/UserMovieInfo/getallusermovies?userid={UserId}
         [HttpGet("getallusermovies")]
-        public IActionResult GetAllUserInfo(Guid UserId) {
-            return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, UserMovieInfoList = _DbContext.UsersMovieInfo.Where(umil => umil.UserId == UserId && umil.Active != false).ToList() });
+        public async Task<ActionResult<IEnumerable<UserMovieInfo>>> GetAllUserInfo(Guid UserId) {
+            if(UserId == Guid.Empty) {
+                return NotFound();
+            }
+            var usersMovies = await _DbContext.UsersMovieInfo.Where(um => um.UserId == UserId && um.Active != false).ToListAsync();
+            if(usersMovies != null) {
+                return usersMovies;
+            } else {
+                return NotFound();
+            }
         }
 
         // GET: api/UserMovieInfo/getusermovie?userid={UserId}?movieid={MovieId}
         [HttpGet("getusermovie")]
-        public async Task<IActionResult> GetUserInfo(Guid UserId, Guid MovieId) {
-            var userMovieReturn = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umr => umr.UserId == UserId && umr.MovieId == MovieId && umr.Active != false);
-            var result = new UserMovieInfoReply();
-            if(userMovieReturn != null) {
-                result = new UserMovieInfoReply() {
-                    ErrorInfo = new ErrorReply() {
-                        IsError = false,
-                        Message = ""
-                    },
-                    SingleUserMovieInfo = userMovieReturn
-                };
-            } else {
-                result = new UserMovieInfoReply() {
-                    ErrorInfo = new ErrorReply() {
-                        IsError = true,
-                        Message = "Movie information Not Found."
-                    }
-                };
+        public async Task<ActionResult<UserMovieInfo>> GetUserInfo(Guid UserId, Guid MovieId) {
+            if(UserId == Guid.Empty || MovieId == Guid.Empty) {
+                return NotFound();
             }
-            return Ok(result);
+            var userMovieReturn = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umr => umr.UserId == UserId && umr.MovieId == MovieId && umr.Active != false);
+            if(userMovieReturn != null) {
+                return userMovieReturn;
+            } else {
+                return NotFound();
+            }
         }
 
         // POST: api/UserMovieInfo/addmovie
         [HttpPost("addmovie")]
-        public async Task<IActionResult> PostUserInfo([FromBody] UserMovieInfo UserInfoToAdd) {
+        public async Task<ActionResult<UserMovieInfo>> PostUserInfo([FromBody] UserMovieInfo UserInfoToAdd) {
             if(UserInfoToAdd == null) {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to add." } });
-            }
-            var userInfoCheck = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(uic => uic.MovieId == UserInfoToAdd.MovieId && uic.UserId == UserInfoToAdd.UserId);
-            if(userInfoCheck != null) {
-                if(userInfoCheck.Active == false) {
-                    userInfoCheck.Active = true;
-                    await _DbContext.SaveChangesAsync();
-                    return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleUserMovieInfo = userInfoCheck });
-                }
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie has already been added to your profile." } });
+                return NotFound();
             }
             UserInfoToAdd.Id = Guid.NewGuid();
             UserInfoToAdd.Created = DateTime.Now;
-            UserInfoToAdd.ModifideDate = UserInfoToAdd.Created;
+            UserInfoToAdd.ModifideDate = DateTime.Now;
             UserInfoToAdd.Active = true;
-            try {
-                await _DbContext.AddAsync(UserInfoToAdd);
-                await _DbContext.SaveChangesAsync();
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleUserMovieInfo = UserInfoToAdd });
-            } catch {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to add movie." } });
-            }
+            _DbContext.UsersMovieInfo.Add(UserInfoToAdd);
+            await _DbContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUserInfo), UserInfoToAdd);
         }
 
         // PUT: api/UserMovieInfo/updateusermovieinfo
         [HttpPut("updateusermovieinfo")]
-        public async Task<IActionResult> PutUserInfo([FromBody] UserMovieInfo UserInfoToUpdate) {
+        public async Task<ActionResult> PutUserInfo([FromBody] UserMovieInfo UserInfoToUpdate) {
             if(UserInfoToUpdate == null) {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
+                return NotFound();
             }
-            var userInfoUpdate = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(uiu => uiu.Id == UserInfoToUpdate.Id && uiu.UserId == UserInfoToUpdate.UserId && uiu.Active != false);
-            if(userInfoUpdate == null) {
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Movie does not exist." } });
-            }
-            userInfoUpdate.UserId = UserInfoToUpdate.UserId;
-            userInfoUpdate.MovieId = UserInfoToUpdate.MovieId;
-            userInfoUpdate.UserRating= UserInfoToUpdate.UserRating;
-            userInfoUpdate.Created = UserInfoToUpdate.Created;
-            userInfoUpdate.ModifideDate = DateTime.Now;
-            userInfoUpdate.Notes = UserInfoToUpdate.Notes;
-            userInfoUpdate.Active = true;
+            _DbContext.Entry(UserInfoToUpdate).State = EntityState.Modified;
             try {
                 await _DbContext.SaveChangesAsync();
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleUserMovieInfo = userInfoUpdate });
-            } catch {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to add movie." } });
+            } catch(DbUpdateConcurrencyException) {
+                throw;
             }
+            return Ok();
         }
 
         // DELETE: api/UserMovieInfo/deletemovie?userid={UserId}?movieid={MovieId}
         [HttpDelete("deleteusermovieinfo")]
-        public async Task<IActionResult> DeleteMovie(Guid UserId, Guid MovieId) {
+        public async Task<ActionResult> DeleteMovie(Guid UserId, Guid MovieId) {
             if(MovieId == Guid.Empty || UserId == Guid.Empty) {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "No data to update." } });
+                return NotFound();
             }
-            var UserInfoDelete = _DbContext.UsersMovieInfo.FirstOrDefault(uid => uid.MovieId == MovieId && uid.UserId == UserId && uid.Active != false);
-            if(UserInfoDelete == null) {
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "User's movie info does not exist." } });
+            var userMovieDelete = await _DbContext.UsersMovieInfo.FirstOrDefaultAsync(umd => umd.Id == UserId && umd.MovieId == MovieId && umd.Active != false);
+            if(userMovieDelete == null) {
+                return NotFound();
             }
-            UserInfoDelete.ModifideDate = DateTime.Now;
-            UserInfoDelete.Active = false;
+            userMovieDelete.ModifideDate = DateTime.Now;
+            userMovieDelete.Active = false;
+            _DbContext.Entry(userMovieDelete).State = EntityState.Modified;
             try {
                 await _DbContext.SaveChangesAsync();
-                return Ok(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = false, Message = "" }, SingleUserMovieInfo = UserInfoDelete });
-            } catch {
-                return BadRequest(new UserMovieInfoReply() { ErrorInfo = new ErrorReply() { IsError = true, Message = "Failed to remove movie." } });
+            } catch(DbUpdateConcurrencyException) {
+                throw;
             }
+            return Ok();
         }
     }
 }

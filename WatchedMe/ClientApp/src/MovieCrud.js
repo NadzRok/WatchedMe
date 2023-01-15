@@ -1,10 +1,11 @@
 import React, { useState, useEffect, Fragment } from "react";
-import Table from 'react-bootstrap/Table';
-import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
+import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import axios from "axios";
 
 const MovieCrud = () => {
     const [show, setShow] = useState(false);
@@ -59,11 +60,19 @@ const MovieCrud = () => {
 
     const [data, setData] = useState([]);
     useEffect(() => {
-        setData(movieData);
-    }, [movieData])
+        getData();
+    }, [])
+
+    const getData = () => {
+        axios.get('https://localhost:7171/api/movie/getallmovies')
+            .then((result) => {
+                setData(result.data)
+            }).catch((error) => {
+                console.log(error)
+            })
+    }
 
     const handleEdit = (id) => {
-        //alert(id);
         handleShow();
     }
 
@@ -108,21 +117,22 @@ const MovieCrud = () => {
                 <tbody>
                     {
                         data && data.length > 0 ?
-                        data.map((item, index) => {
-                            return (
-                                <tr key={index}>
-                                    <td>{item.Title}</td>
-                                    <td>{item.Description}</td>
-                                    <td>{item.Url}</td>
-                                    <td colSpan={2}>
-                                        <button className="btn btn-primary" onClick={() => handleEdit(item.Id)}>Edit</button> &nbsp;
-                                        <button className="btn btn-danger" onClick={() => handleDelete(item.Id)}>Delete</button>
-                                    </td>
-                                </tr>
-                            )
-                        })
-                        :
-                        'loading...'
+                            data.map((item, index) => {
+                                return (
+                                    <tr key={index}>
+                                        <td>{index + 1}</td>
+                                        <td type="text">{item.title}</td>
+                                        <td type="text">{item.description}</td>
+                                        <td type="text">{item.url}</td>
+                                        <td colSpan={2}>
+                                            <button className="btn btn-primary" onClick={() => handleEdit(item.Id)}>Edit</button> &nbsp;
+                                            <button className="btn btn-danger" onClick={() => handleDelete(item.Id)}>Delete</button>
+                                        </td>
+                                    </tr>
+                                )
+                            })
+                            :
+                            'loading...'
                     }
                 </tbody>
             </Table>
