@@ -18,7 +18,7 @@ namespace WatchedMe.Controllers {
             if (_DbContext.Movies == null) {
                 return NotFound();
             }
-            return await _DbContext.Movies.ToListAsync();
+            return await _DbContext.Movies.Where(m => m.Active != false).ToListAsync();
         }
 
         // GET: api/movie/getamovie?movieid={MovieId}
@@ -27,7 +27,7 @@ namespace WatchedMe.Controllers {
             if(_DbContext.Movies == null) {
                 return NotFound();
             }
-            var movie = await _DbContext.Movies.FirstOrDefaultAsync(m => m.Id == MovieId);
+            var movie = await _DbContext.Movies.FirstOrDefaultAsync(m => m.Id == MovieId && m.Active != false);
             if (movie == null) {
                 return NotFound();
             }

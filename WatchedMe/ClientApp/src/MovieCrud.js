@@ -6,6 +6,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"
 
 const MovieCrud = () => {
     const [show, setShow] = useState(false);
@@ -18,7 +20,7 @@ const MovieCrud = () => {
     const [Created, setCreated] = useState('0001-01-01T00:00:00');
     const [ModifideDate, setModifideDate] = useState('0001-01-01T00:00:00');
     const [Url, setUrl] = useState('');
-    const [Active, setActive] = useState('flase');
+    const [Active, setActive] = useState('false');
 
     const [EditId, setEditId] = useState('00000000-0000-0000-0000-000000000000');
     const [EditTitle, setEditTitle] = useState('');
@@ -26,37 +28,7 @@ const MovieCrud = () => {
     const [EditCreated, setEditCreated] = useState('0001-01-01T00:00:00');
     const [EditModifideDate, setEditModifideDate] = useState('0001-01-01T00:00:00');
     const [EditUrl, setEditUrl] = useState('');
-    const [EditActive, setEditActive] = useState('flase');
-
-    const movieData = [
-        {
-            Id: 'e5376999-29b6-49a8-8a39-065a18e85141',
-            Title: 'This is the first movie to be added',
-            Description: 'about nothing in particular.',
-            Created: '2023-01-14 21:45:21.3841971',
-            ModifideDate: '2023-01-15 00:41:19.2180590',
-            Url: '',
-            Active: true
-        },
-        {
-            Id: '4de205d6-173a-49d1-afff-4457b3987ebe',
-            Title: 'And the third one',
-            Description: 'A steaming pile of crap, but is update still working?',
-            Created: '2023-01-15 00:36:57.4898540',
-            ModifideDate: '2023-01-15 00:39:15.8771298',
-            Url: '',
-            Active: true
-        },
-        {
-            Id: 'fdd44cd3-3e46-4a1f-a1e8-eb36d0a3917f',
-            Title: 'This is the second movie to be added Part 2',
-            Description: 'about nothing in particular except against all odds, it is better than the first one.',
-            Created: '2023-01-14 21:46:50.4900749',
-            ModifideDate: '2023-01-14 22:12:55.3135867',
-            Url: '',
-            Active: true
-        }
-    ]
+    const [EditActive, setEditActive] = useState('false');
 
     const [data, setData] = useState([]);
     useEffect(() => {
@@ -86,8 +58,45 @@ const MovieCrud = () => {
 
     }
 
+    const handleSave = () => {
+        const url = "https://localhost:7171/api/movie/addmovie";
+        const data = {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "title": Title,
+            "description": Description,
+            "created": "0001-01-01T00:00:00",
+            "modifideDate": "0001-01-01T00:00:00",
+            "url": Url,
+            "active": true
+        }
+        axios.post(url, data)
+            .then((result) => {
+                getData();
+                clear();
+                toast.success('Movie was added.');
+            })
+    }
+
+    const clear = () => {
+        setId('00000000-0000-0000-0000-000000000000');
+        setTitle('');
+        setDescription('');
+        setCreated('0001-01-01T00:00:00');
+        setModifideDate('0001-01-01T00:00:00');
+        setUrl('');
+        setActive('false');
+        setEditId('00000000-0000-0000-0000-000000000000');
+        setEditTitle('');
+        setEditDescription('');
+        setEditCreated('0001-01-01T00:00:00');
+        setEditModifideDate('0001-01-01T00:00:00');
+        setEditUrl('');
+        setEditActive('false');
+    }
+
     return (
         <Fragment>
+            <ToastContainer/>
             <Container>
                 <Row>
                     <Col>
@@ -100,7 +109,7 @@ const MovieCrud = () => {
                         <input type="text" className="form-control" placeholder="Enter url for movie" value={Url} onChange={(e) => setUrl(e.target.value)} />
                     </Col>
                     <Col>
-                        <button className="btn btn-primary">Submit</button>
+                        <button className="btn btn-primary" onCkick={() => handleSave()}>Submit</button>
                     </Col>
                 </Row>
             </Container>
