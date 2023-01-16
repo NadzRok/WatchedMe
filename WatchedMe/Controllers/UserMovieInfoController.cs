@@ -8,7 +8,7 @@
             _DbContext = DbContext;
         }
 
-        // GET: api/UserMovieInfo/getallusermovies?userid={UserId}
+        // GET: https://localhost:7171/api/UserMovieInfo/getallusermovies?userid={UserId}
         [HttpGet("getallusermovies")]
         public async Task<ActionResult<IEnumerable<UserMovieInfo>>> GetAllUserInfo(Guid UserId) {
             if(UserId == Guid.Empty) {
@@ -22,7 +22,7 @@
             }
         }
 
-        // GET: api/UserMovieInfo/getusermovie?userid={UserId}?movieid={MovieId}
+        // GET: https://localhost:7171/api/UserMovieInfo/getusermovie?userid={UserId}?movieid={MovieId}
         [HttpGet("getusermovie")]
         public async Task<ActionResult<UserMovieInfo>> GetUserInfo(Guid UserId, Guid MovieId) {
             if(UserId == Guid.Empty || MovieId == Guid.Empty) {
@@ -36,7 +36,7 @@
             }
         }
 
-        // POST: api/UserMovieInfo/addmovie
+        // POST: https://localhost:7171/api/UserMovieInfo/addmovie
         [HttpPost("addmovie")]
         public async Task<ActionResult<UserMovieInfo>> PostUserInfo([FromBody] UserMovieInfo UserInfoToAdd) {
             if(UserInfoToAdd == null) {
@@ -52,7 +52,7 @@
             return CreatedAtAction(nameof(GetUserInfo), UserInfoToAdd);
         }
 
-        // PUT: api/UserMovieInfo/updateusermovieinfo
+        // PUT: https://localhost:7171/api/UserMovieInfo/updateusermovieinfo
         [HttpPut("updateusermovieinfo")]
         public async Task<ActionResult> PutUserInfo([FromBody] UserMovieInfo UserInfoToUpdate) {
             if(UserInfoToUpdate == null) {
@@ -67,7 +67,7 @@
             return Ok();
         }
 
-        // DELETE: api/UserMovieInfo/deletemovie?userid={UserId}?movieid={MovieId}
+        // DELETE: https://localhost:7171/api/UserMovieInfo/deletemovie?userid={UserId}?movieid={MovieId}
         [HttpDelete("deleteusermovieinfo")]
         public async Task<ActionResult> DeleteMovie(Guid UserId, Guid MovieId) {
             if(MovieId == Guid.Empty || UserId == Guid.Empty) {

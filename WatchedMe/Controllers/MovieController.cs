@@ -12,7 +12,7 @@ namespace WatchedMe.Controllers {
             _DbContext = DbContext;
         }
 
-        // GET: api/movie/getallmovies
+        // GET: https://localhost:7171/api/movie/getallmovies
         [HttpGet("getallmovies")]
         public async Task<ActionResult<IEnumerable<Movie>>> GetMovies() {
             if (_DbContext.Movies == null) {
@@ -21,7 +21,7 @@ namespace WatchedMe.Controllers {
             return await _DbContext.Movies.Where(m => m.Active != false).ToListAsync();
         }
 
-        // GET: api/movie/getamovie?movieid={MovieId}
+        // GET: https://localhost:7171/api/movie/getamovie?movieid={MovieId}
         [HttpGet("getamovie")]
         public async Task<ActionResult<Movie>> GetMovie(Guid MovieId) {
             if(_DbContext.Movies == null) {
@@ -34,7 +34,7 @@ namespace WatchedMe.Controllers {
             return movie;
         }
 
-        // POST: api/movie/addmovie
+        // POST: https://localhost:7171/api/movie/addmovie
         [HttpPost("addmovie")]
         public async Task<ActionResult<Movie>> PostMovie([FromBody]Movie MovieToAdd) {
             MovieToAdd.Id = Guid.NewGuid();
@@ -47,7 +47,7 @@ namespace WatchedMe.Controllers {
             return CreatedAtAction(nameof(GetMovie), MovieToAdd);
         }
 
-        // PUT: api/movie/updatemovie
+        // PUT: https://localhost:7171/api/movie/updatemovie
         [HttpPut("updatemovie")]
         public async Task<ActionResult> PutMovie([FromBody] Movie MovieToUpdate) {
             if(MovieToUpdate == null) {
@@ -62,7 +62,7 @@ namespace WatchedMe.Controllers {
             return Ok();
         }
 
-        // DELETE: api/movie/deletemovie?movieid={MovieId}
+        // DELETE: https://localhost:7171/api/movie/deletemovie?movieid={MovieId}
         [HttpDelete("deletemovie")]
         public async Task<ActionResult> DeleteMovie(Guid MovieId) {
             if (MovieId == Guid.Empty) {
